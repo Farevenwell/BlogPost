@@ -1,26 +1,8 @@
-import {Stack, useRouter} from "expo-router";
+import {Redirect, Slot} from "expo-router";
 import "@/global.css"
-import StorePreferences, { SecureStorePersistence} from "@/services/util/StorePreferences";
-import {useEffect} from "react";
+import React from 'react'
 
 const App = () => {
-    const router = useRouter()
-    useEffect(() => {
-        SecureStorePersistence.getValue(StorePreferences.AUTH_TOKEN)
-            .then(token  => {
-                if(token === null) {
-                    router.navigate("/signIn")
-                } else {
-                    router.navigate("/home")
-                }
-            })
-    }, []);
-
-    return (
-        <Stack screenOptions={{headerShown: false}}>
-            <Stack.Screen name="index" options={{headerShown: false}}/>
-            <Stack.Screen name="signIn" options={{headerShown: false}}/>
-        </Stack>
-    )
+    return <Redirect href="/sign-in"/>
 }
 export default App

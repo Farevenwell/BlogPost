@@ -6,6 +6,8 @@ export interface AuthData {
 }
 
 export interface AuthContextProps {
+    isAuthenticated: boolean
+    isLoading: boolean
     onLogin: (authData: AuthData) => void
     onRegister: (authData: AuthData) => void
     onLogout: () => void

@@ -1,10 +1,10 @@
-import {Stack} from "expo-router"
+import {Redirect, Stack, useRouter} from "expo-router"
 import {MaterialIcons} from "@expo/vector-icons"
-import {useAuth} from "@/context/AuthContext"
 import {TouchableOpacity} from "react-native"
+import AuthRepoApi from "@/services/api/authApi"
 
 const _layout = () => {
-    const auth = useAuth()
+    const authApi = AuthRepoApi()
     return (
         <Stack>
             <Stack.Screen name="[id]" options={{title: "Info"}}/>
@@ -12,13 +12,13 @@ const _layout = () => {
                 name="home"
                 options={{
                     title: "Posts",
-                    headerBackVisible: false,
                     headerRight: () => {
                         return (
-                            <TouchableOpacity onPress={() => auth.onLogout()}>
+                            <TouchableOpacity onPress={() => authApi.onLogout().catch(err => console.log(err))}>
                                 <MaterialIcons
                                     name="logout"
-                                    size={24} color="red"
+                                    size={24}
+                                    color="red"
                                 />
                             </TouchableOpacity>
                         )

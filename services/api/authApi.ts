@@ -3,64 +3,55 @@ import {useState} from "react"
 import {FIREBASE_AUTH} from "@/lib/FirebaseConfig"
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword, UserCredential} from "@firebase/auth"
 import StorePreferences, {SecureStorePersistence} from "@/services/util/StorePreferences"
-import {useRouter} from "expo-router"
+import {useRouter} from "expo-router";
 
-export const useLogin = () => {
+const AuthRepoApi = () => {
     const router = useRouter()
-    const [loading, setLoading] = useState<boolean>(false)
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const auth = FIREBASE_AUTH
 
     const onLogin = async (data: AuthData) => {
-        console.log(data.email, data.password)
-        setLoading(true)
+        setIsLoading(true)
         try {
             const response: UserCredential = await signInWithEmailAndPassword(auth, data.email, data.password)
             const tokenResult = await response.user.getIdTokenResult()
             await SecureStorePersistence.saveValue(StorePreferences.AUTH_TOKEN, tokenResult.token)
             router.navigate("/(screens)/home")
-            setIsLoggedIn(true)
+            setIsAuthenticated(true)
         } catch (e) {
-            console.log("Login failed")
+            console.log("Login failed", e)
         } finally {
-            setLoading(false)
+            setIsLoading(false)
         }
     }
 
-    return {onLogin, loading, isLoggedIn}
-}
-
-export const useRegister = () => {
-    const [loading, setLoading] = useState<boolean>(false)
-    const auth = FIREBASE_AUTH
-
     const onRegister = async (data: AuthData) => {
-        setLoading(true)
+        setIsLoading(true)
         try {
             const response: UserCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
             if (response.user !== null) {
-                const token = response.user.refreshToken
-                await SecureStorePersistence.saveValue(StorePreferences.AUTH_TOKEN, token)
+                const tokenResult = await response.user.getIdTokenResult()
+                await SecureStorePersistence.saveValue(StorePreferences.AUTH_TOKEN, tokenResult.token)
+                router.navigate("/home")
+                setIsAuthenticated(true)
             }
         } catch (e) {
             console.log("Registration failed", e)
         } finally {
-            setLoading(false)
+            setIsLoading(false)
         }
     }
 
-    return {onRegister, loading}
-}
-
-export const useLogout = () => {
-    const router = useRouter()
     const onLogout = async () => {
         await Promise.all([
             FIREBASE_AUTH.signOut(),
             SecureStorePersistence.removeValue(StorePreferences.AUTH_TOKEN)
         ])
-        router.navigate("/signIn")
+        setIsAuthenticated(false)
+        router.navigate("/sign-in")
     }
-    return {onLogout}
+    return {isAuthenticated, isLoading, onLogin, onLogout, onRegister}
 }
 
+export default AuthRepoApi
